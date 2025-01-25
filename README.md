@@ -1,6 +1,11 @@
 # RoomieU
 QHacks 2025
 
+Run the Flask application like
+```
+python run.py
+```
+
 Note: For the below requests, the example IDs may be invalid if the database has changed. Use valid IDs (see database).
 
 Add user:

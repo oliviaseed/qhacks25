@@ -1,21 +1,60 @@
-from bson.objectid import ObjectId
+from bson import ObjectId
+from datetime import datetime
 
-def serialize_user(user):
-    return {
-        "id": str(user["_id"]),
-        "username": user["username"],
-        "email": user["email"],
-        "age": user["age"],
-        "gender": user["gender"],
-        "is_listing": user.get("is_listing", False),
-        "house_id": user.get("house_id")
-    }
+class User:
+    def __init__(self, db):
+        self.collection = db.users
 
-def serialize_house(house):
-    return {
-        "id": str(house["_id"]),
-        "type": house["type"],
-        "rooms_available": house["rooms_available"],
-        "rent": house["rent"],
-        "utilities_included": house["utilities_included"]
-    }
+    def create(self, user_data):
+        """
+        Create a new user document in the database.
+        """
+        #TODO: preferences, images, etc.
+        user = {
+            "username": user_data["username"],
+            "email": user_data["email"],
+            "password": user_data["password"],  # Hash password in production
+            "school": user_data["school"],
+            "age": user_data["age"],
+            "gender": user_data["gender"],
+            "is_listing": user_data.get("is_listing", False),
+            "house_id": None,
+            "swipes": [],
+            "created_at": datetime.utcnow()
+        }
+        return self.collection.insert_one(user).inserted_id
+
+    def find_by_id(self, user_id):
+        """
+        Find a user by their ID.
+        """
+        if not ObjectId.is_valid(user_id):
+            return None
+        return self.collection.find_one({"_id": ObjectId(user_id)})
+
+    def update_is_listing(self, user_id, house_id):
+        """
+        Update the user's is_listing status and associate a house ID.
+        """
+        return self.collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"is_listing": True, "house_id": house_id}}
+        )
+
+
+class House:
+    def __init__(self, db):
+        self.collection = db.houses
+
+    def create(self, house_data):
+        """
+        Create a new house document in the database.
+        """
+        house = {
+            "type": house_data["type"],
+            "rooms_available": house_data["rooms_available"],
+            "rent": house_data["rent"],
+            "utilities_included": house_data["utilities_included"],
+            "created_at": datetime.utcnow()
+        }
+        return self.collection.insert_one(house).inserted_id

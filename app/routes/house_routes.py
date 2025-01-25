@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from bson import ObjectId
+from app.models import User, House
 
 bp = Blueprint("house_routes", __name__)
 
@@ -19,29 +20,21 @@ def add_house(user_id):
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
-
-    # Build the house document
-    house = {
-        "type": data.get("type"),
-        "rooms_available": data.get("rooms_available"),
-        "rent": data.get("rent"),
-        "utilities_included": data.get("utilities_included")
-    }
-
+        
     try:
-        # Insert the house into the database
-        house_id = current_app.db.houses.insert_one(house).inserted_id
+        db = current_app.db
+        user_model = User(db)
+        house_model = House(db)
 
-        # Update the user's document to reference the new house
-        result = current_app.db.users.update_one(
-            {"_id": ObjectId(user_id)},
-            {"$set": {"is_listing": True, "house_id": house_id}}
-        )
+        required_fields = ["type", "rooms_available", "rent", "utilities_included"]
+        for field in required_fields:
+            if field not in data or data[field] is None:
+                return jsonify({"error": f"Missing required house field: {field}"}), 400
 
-        if result.matched_count == 0:
-            # If no user is found with the given user_id, return an error
-            return jsonify({"error": "User not found"}), 404
+        # Create the house
+        house_id = house_model.create(data)
+        user_model.update_is_listing(user_id, house_id)
 
-        return jsonify({"message": "House added to user", "house_id": str(house_id)}), 200
+        return jsonify({"message": "House added", "user_id": str(house_id)}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
