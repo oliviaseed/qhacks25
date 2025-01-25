@@ -84,7 +84,7 @@ def get_matches(user_id):
             {"user2_id": user_id}
         ]})
 
-        match_list = [{"match_id": str(match["_id"]), "user1_id": match["user1_id"], "user2_id": match["user2_id"], "matched_on": match["matched_on"]} for match in matches]
+        match_list = [{"match_id": str(match["_id"]), "user1_id": match["user1_id"], "user2_id": match["user2_id"], "matched_on": match["matched_on"], "last_message": match["last_message"]} for match in matches]
 
         return jsonify({"matches": match_list}), 200
     except Exception as e:
