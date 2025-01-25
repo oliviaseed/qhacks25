@@ -1,9 +1,7 @@
-from flask import Blueprint, request, jsonify, current_app, send_file
+from flask import Blueprint, request, jsonify, current_app
 from app.models import User, House
-import base64
 from bson import ObjectId
-import io
-from ..services.misc_services import encode_img
+from ..services.misc_services import encode_img, decode_img
 
 bp = Blueprint("user_routes", __name__)
 
@@ -60,6 +58,11 @@ def update_user(user_id):
         if user:
             if 'profile_picture' in data and data['profile_picture'] is not None:
                 data['profile_picture'] = encode_img(data['profile_picture'])
+            images_encoded = []
+            if "images" in data and data["images"]:
+                for image_path in data["images"]:
+                    images_encoded.append(encode_img(image_path))
+                data['images'] = images_encoded
             db['users'].update_one({"_id": ObjectId(user_id)}, {"$set": data})
             return jsonify({"message": "User updated"}), 200
     except Exception as e:
@@ -70,8 +73,23 @@ def view_profile_picture(user_id):
     db = current_app.db
     user = db['users'].find_one({"_id": ObjectId(user_id)})
     if user and user.get("profile_picture"):
-        profile_picture_encoded = user["profile_picture"]
-        profile_picture_decoded = base64.b64decode(profile_picture_encoded)
-        return send_file(io.BytesIO(profile_picture_decoded), mimetype='image/jpeg')
+        return decode_img(user["profile_picture"])
     else:
         return jsonify({"error": "Profile picture not found"}), 404
+
+@bp.route('/view_user_image/<user_id>/<image_index>', methods=['GET'])
+def view_user_image(user_id, image_index):
+    try:
+        db = current_app.db
+        user = db['users'].find_one({"_id": ObjectId(user_id)})
+        if user and user.get("images"):
+            image_index = int(image_index)
+            if 0 <= image_index < len(user["images"]):
+                return decode_img(user["images"][image_index])
+            else:
+                return jsonify({"error": "Image index out of range"}), 404
+        else:
+            return jsonify({"error": "User or images not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    

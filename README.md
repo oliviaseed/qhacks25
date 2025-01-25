@@ -13,6 +13,9 @@ Add user:
 curl -X POST http://127.0.0.1:5000/add_user -H "Content-Type: application/json" -d "{\"username\": \"john_doe\", \"email\": \"john@example.com\", \"password\": \"secure_password\", \"school\": \"Example University\", \"age\": 25, \"gender\": \"Male\", \"is_listing\": false}"
 ```
 
+Update user:
+curl -X PATCH http://127.0.0.1:5000/update_user/USER_ID -H "Content-Type: application/json" -d "{ \"email\": \"john@example.com\"}"
+
 Add listing (replace USER_ID with the lister's user ID):
 ```
 curl -X POST http://127.0.0.1:5000/add_house/USER_ID -H "Content-Type: application/json" -d "{ \"type\": \"Apartment\", \"rooms_available\": 2, \"rent\": 1200, \"utilities_included\": true }"

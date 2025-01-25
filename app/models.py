@@ -15,6 +15,10 @@ class User:
         profile_picture_encoded = None
         if "profile_picture" in user_data and user_data["profile_picture"]:
             profile_picture_encoded = encode_img(user_data["profile_picture"])
+        images_encoded = []
+        if "images" in user_data and user_data["images"]:
+            for image_path in user_data["images"]:
+                images_encoded.append(encode_img(image_path))
 
         user = {
             "username": user_data["username"],
@@ -27,6 +31,7 @@ class User:
             "house_id": None,
             "swipes": [],
             "profile_picture": profile_picture_encoded,
+            "images": images_encoded,
             "created_at": datetime.utcnow()
         }
         return self.collection.insert_one(user).inserted_id
