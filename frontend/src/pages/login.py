@@ -5,6 +5,7 @@ from streamlit_cookies_manager import EncryptedCookieManager
 from bson import ObjectId
 from dotenv import load_dotenv
 import os
+import time
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,8 +17,13 @@ if not cookie_password:
     st.stop()
 
 cookies = EncryptedCookieManager(password=cookie_password)
-if not cookies.ready():
-    st.stop()
+timeout = 10  # seconds
+start_time = time.time()
+while not cookies.ready():
+    if time.time() - start_time > timeout:
+        st.error("Cookies manager not ready. Please try again later.")
+        st.stop()
+    time.sleep(0.1)
 
 db = get_mongo_db()
 users_collection = db["users"]
