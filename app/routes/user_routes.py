@@ -106,3 +106,33 @@ def view_user_image(user_id, image_index):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+# due to multiple inputs, pass inputs in args like
+# curl -X GET "http://127.0.0.1:5000/get_users?user_id=679486f52cbb9e9a76e75104&age=25&gender=Male"
+@bp.route('/get_users', methods=['GET'])
+def get_users():
+    user_id = request.args.get('user_id')
+    filters = request.args.to_dict()
+    filters.pop('user_id', None)  # Remove user_id from filters
+
+    if not ObjectId.is_valid(user_id):
+        return jsonify({"error": "Invalid logged in user ID"}), 400
+
+    try:
+        db = current_app.db
+        user_model = User(db)
+        
+        query = {"_id": {"$ne": ObjectId(user_id)}}
+        
+        # Apply filters
+        for key, value in filters.items():
+            query[key] = value
+
+        users = list(db['users'].find(query))
+        for user in users:
+            user["_id"] = str(user["_id"])  # Convert ObjectId to string for JSON serialization
+            if "house_id" in user and user["house_id"]:
+                user["house_id"] = str(user["house_id"])  # Convert house_id to string if it exists
+
+        return jsonify(users), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
