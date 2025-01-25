@@ -48,12 +48,24 @@ def add_user():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@bp.route('/update_user/<user_id>', methods=['PATCH'])
+def update_user(user_id):
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+    try:
+        db = current_app.db
+        user = db['users'].find_one({"_id": ObjectId(user_id)})
+        if user:
+            db['users'].update_one({"_id": ObjectId(user_id)}, {"$set": data})
+            return jsonify({"message": "User updated"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 @bp.route('/view_profile_picture/<user_id>', methods=['GET'])
 def view_profile_picture(user_id):
     db = current_app.db
     user = db['users'].find_one({"_id": ObjectId(user_id)})
-    print("db: ", db)
-    print("User: ", user)
     if user and user.get("profile_picture"):
         profile_picture_encoded = user["profile_picture"]
         profile_picture_decoded = base64.b64decode(profile_picture_encoded)
