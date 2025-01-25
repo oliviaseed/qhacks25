@@ -18,10 +18,12 @@ def create_app():
         raise e
     
     # Register Blueprints
-    from app.routes import user_routes, house_routes, swipe_route
+    from app.routes import user_routes, house_routes, swipe_routes, chat_routes
     app.register_blueprint(user_routes.bp)
     app.register_blueprint(house_routes.bp)
-    app.register_blueprint(swipe_route.bp)
+    app.register_blueprint(swipe_routes.bp)
+    app.register_blueprint(chat_routes.bp)
     
+
     return app
 

@@ -20,3 +20,13 @@ Get matches:
 ```
 curl -X GET http://127.0.0.1:5000/matches/679486f52cbb9e9a76e75104
 ```
+
+Send message:
+```
+curl -X POST http://127.0.0.1:5000/send_message -H "Content-Type: application/json" -d "{ \"match_id\": \"67948cfccd3a78361e4bed1f\", \"sender_id\": \"67948c725412ccef7a098212\", \"receiver_id\": \"679486f52cbb9e9a76e75104\", \"message\": \"Hey, how are you? winkyface\"}"
+```
+
+Get chat messages:
+```
+curl -X GET http://127.0.0.1:5000/get_messages/67948cfccd3a78361e4bed1f
+```
