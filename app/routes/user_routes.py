@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from app.models import User, House
+from app.models import User, House, USER_REQUIRED_FIELDS
 from bson import ObjectId
 from ..services.misc_services import encode_img, decode_img
 
@@ -12,8 +12,7 @@ def add_user():
         return jsonify({"error": "Invalid request"}), 400
 
     # Validate required fields
-    required_fields = ["username", "email", "password", "school", "age", "gender"]
-    for field in required_fields:
+    for field in USER_REQUIRED_FIELDS:
         if field not in data or not data[field]:
             return jsonify({"error": f"Missing required field: {field}"}), 400
 

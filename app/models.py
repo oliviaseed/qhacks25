@@ -2,6 +2,9 @@ from bson import ObjectId
 from datetime import datetime
 from .services.misc_services import encode_img
 
+USER_REQUIRED_FIELDS = ["username", "email", "password", "school", "age", "gender"]
+HOUSE_REQUIRED_FIELDS = ["type", "rooms_available", "rent", "utilities_included"]
+
 class User:
     def __init__(self, db):
         self.collection = db.users
@@ -52,7 +55,6 @@ class User:
             {"_id": ObjectId(user_id)},
             {"$set": {"is_listing": True, "house_id": house_id}}
         )
-
 
 class House:
     def __init__(self, db):
