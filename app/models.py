@@ -57,11 +57,18 @@ class House:
         """
         Create a new house document in the database.
         """
+        
+        images_encoded = []
+        if "images" in house_data and house_data["images"]:
+            for image_path in house_data["images"]:
+                images_encoded.append(encode_img(image_path))
+
         house = {
             "type": house_data["type"],
             "rooms_available": house_data["rooms_available"],
             "rent": house_data["rent"],
             "utilities_included": house_data["utilities_included"],
+            "images": images_encoded,
             "created_at": datetime.utcnow()
         }
         return self.collection.insert_one(house).inserted_id
