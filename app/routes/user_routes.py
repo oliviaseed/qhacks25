@@ -5,6 +5,20 @@ from ..services.misc_services import encode_img, decode_img
 
 bp = Blueprint("user_routes", __name__)
 
+@bp.route('/get_user/<user_id>', methods=['GET'])
+def get_user(user_id):
+    if not ObjectId.is_valid(user_id):
+        return jsonify({"error": "Invalid user ID"}), 400
+
+    db = current_app.db
+    user_model = User(db)
+    user = user_model.find_by_id(user_id)
+    if user:
+        user["_id"] = str(user["_id"])  # Convert ObjectId to string for JSON serialization
+        return jsonify(user), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+    
 @bp.route('/add_user', methods=['POST'])
 def add_user():
     data = request.json

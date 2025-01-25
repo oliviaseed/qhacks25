@@ -95,3 +95,11 @@ class House:
             "created_at": datetime.utcnow()
         }
         return self.collection.insert_one(house).inserted_id
+
+    def find_by_id(self, house_id):
+        """
+        Find a user by their ID.
+        """
+        if not ObjectId.is_valid(house_id):
+            return None
+        return self.collection.find_one({"_id": ObjectId(house_id)})
