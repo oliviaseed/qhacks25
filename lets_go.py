@@ -1,3 +1,5 @@
+# OLD LOGIC --- DEPRECATED
+
 import requests
 
 import os
