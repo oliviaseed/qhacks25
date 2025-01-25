@@ -1,6 +1,6 @@
 from bson import ObjectId
 from datetime import datetime
-from .services.misc_services import encode_img
+from .utils.image import encode_img
 
 USER_REQUIRED_FIELDS = ["first_name", "last_name", "email", "password", "school", "age", "gender"]
 HOUSE_REQUIRED_FIELDS = ["type", "rooms_available", "rent", "utilities_included", "bathrooms", "address", "city", "province", "lease_length", "available_from"]

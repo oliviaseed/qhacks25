@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from app.models import User, House, USER_REQUIRED_FIELDS
 from bson import ObjectId
-from ..services.misc_services import encode_img, decode_img
+from ..utils.image import encode_img, decode_img
 
 bp = Blueprint("user_routes", __name__)
 
