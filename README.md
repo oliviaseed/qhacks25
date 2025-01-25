@@ -5,7 +5,7 @@ Note: For the below requests, the example IDs may be invalid if the database has
 
 Add user:
 ```
-curl -X POST http://127.0.0.1:5000/add_user -H "Content-Type: application/json" -d "{\"username\": \"john_doe\", \"email\": \"john@example.com\", \"password\": \"secure_password\", \"school\": \"Example University\", \"age\": 25, \"gender\": \"Male\", \"is_listing\": true, \"house_listing\": {\"type\": \"Apartment\", \"rooms_available\": 2, \"rent\": 1200, \"utilities_included\": true}}"
+curl -X POST http://127.0.0.1:5000/add_user -H "Content-Type: application/json" -d "{\"username\": \"john_doe\", \"email\": \"john@example.com\", \"password\": \"secure_password\", \"school\": \"Example University\", \"age\": 25, \"gender\": \"Male\", \"is_listing\": false}"
 ```
 
 Add listing (replace USER_ID with the lister's user ID):

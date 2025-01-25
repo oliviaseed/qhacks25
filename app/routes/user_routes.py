@@ -17,7 +17,6 @@ def add_user():
         "age": data.get("age"),
         "gender": data.get("gender"),
         "is_listing": data.get("is_listing"),
-        "house_listing": data.get("house_listing") if data.get("is_listing") else None
     }
 
     try:
