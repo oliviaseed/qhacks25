@@ -1,6 +1,6 @@
 from bson import ObjectId
 from datetime import datetime
-import base64
+from .services.misc_services import encode_img
 
 class User:
     def __init__(self, db):
@@ -10,13 +10,11 @@ class User:
         """
         Create a new user document in the database.
         """
-        #TODO: preferences, images, etc.
+        #TODO: preferences, etc.
 
-        if user_data["profile_picture"] is None:
-            profile_picture_encoded = None
-        else:
-            with open(user_data["profile_picture"], "rb") as image_file:
-                profile_picture_encoded = base64.b64encode(image_file.read()).decode('utf-8')
+        profile_picture_encoded = None
+        if "profile_picture" in user_data and user_data["profile_picture"]:
+            profile_picture_encoded = encode_img(user_data["profile_picture"])
 
         user = {
             "username": user_data["username"],
