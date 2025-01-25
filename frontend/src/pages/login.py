@@ -20,6 +20,11 @@ cookies = EncryptedCookieManager(password=cookie_password)
 db = get_mongo_db()
 users_collection = db["users"]
 
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.user = None
+    clear_cookies()
+
 # Function to hash passwords
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -58,10 +63,6 @@ if cookies.get("logged_in") == "true":
         st.session_state.logged_in = True
         st.session_state.user = user
 
-# User input for login
-email = st.text_input('Email:')
-password = st.text_input('Password:', type='password')
-
 # Placeholder for login status
 login_status = st.empty()
 
@@ -69,18 +70,18 @@ if st.session_state.logged_in:
     st.success(f"Welcome {st.session_state.user['first_name']}!")
     st.write('You are now logged in.')
     if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.user = None
-        clear_cookies()
-        st.rerun()
+        logout()
 else:
-    if st.button('Login'):
-        user = authenticate_user(email, password)
-        if user:
-            st.session_state.logged_in = True
-            st.session_state.user = user
-            set_cookies(user)
-            login_status.success('Login successful!')
-            st.rerun()  # Refresh the page to show the logged-in state
-        else:
-            login_status.error('Invalid email or password. Please try again.')
+    # User input for login
+        email = st.text_input('Email:')
+        password = st.text_input('Password:', type='password')
+        if st.button('Login'):
+            user = authenticate_user(email, password)
+            if user:
+                st.session_state.logged_in = True
+                st.session_state.user = user
+                set_cookies(user)
+                login_status.success('Login successful!')
+                st.rerun()  # Refresh the page to show the logged-in state
+            else:
+                login_status.error('Invalid email or password. Please try again.')
