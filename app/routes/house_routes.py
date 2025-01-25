@@ -38,3 +38,18 @@ def add_house(user_id):
         return jsonify({"message": "House added", "user_id": str(house_id)}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@bp.route('/update_house/<house_id>', methods=['PATCH'])
+def update_house(house_id):
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+    try:
+        db = current_app.db
+        house = db['houses'].find_one({"_id": ObjectId(house_id)})
+        if house:
+            db['houses'].update_one({"_id": ObjectId(house_id)}, {"$set": data})
+            return jsonify({"message": "House listing updated"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
