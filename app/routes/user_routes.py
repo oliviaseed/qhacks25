@@ -1,12 +1,24 @@
-from flask import Blueprint, request, jsonify, current_app, send_file
-from app.models import User, House
-import base64
+from flask import Blueprint, request, jsonify, current_app
+from app.models import User, House, USER_REQUIRED_FIELDS
 from bson import ObjectId
-import io
-from ..services.misc_services import encode_img
+from ..services.misc_services import encode_img, decode_img
 
 bp = Blueprint("user_routes", __name__)
 
+@bp.route('/get_user/<user_id>', methods=['GET'])
+def get_user(user_id):
+    if not ObjectId.is_valid(user_id):
+        return jsonify({"error": "Invalid user ID"}), 400
+
+    db = current_app.db
+    user_model = User(db)
+    user = user_model.find_by_id(user_id)
+    if user:
+        user["_id"] = str(user["_id"])  # Convert ObjectId to string for JSON serialization
+        return jsonify(user), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+    
 @bp.route('/add_user', methods=['POST'])
 def add_user():
     data = request.json
@@ -14,8 +26,7 @@ def add_user():
         return jsonify({"error": "Invalid request"}), 400
 
     # Validate required fields
-    required_fields = ["username", "email", "password", "school", "age", "gender"]
-    for field in required_fields:
+    for field in USER_REQUIRED_FIELDS:
         if field not in data or not data[field]:
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
@@ -60,6 +71,11 @@ def update_user(user_id):
         if user:
             if 'profile_picture' in data and data['profile_picture'] is not None:
                 data['profile_picture'] = encode_img(data['profile_picture'])
+            images_encoded = []
+            if "images" in data and data["images"]:
+                for image_path in data["images"]:
+                    images_encoded.append(encode_img(image_path))
+                data['images'] = images_encoded
             db['users'].update_one({"_id": ObjectId(user_id)}, {"$set": data})
             return jsonify({"message": "User updated"}), 200
     except Exception as e:
@@ -70,8 +86,53 @@ def view_profile_picture(user_id):
     db = current_app.db
     user = db['users'].find_one({"_id": ObjectId(user_id)})
     if user and user.get("profile_picture"):
-        profile_picture_encoded = user["profile_picture"]
-        profile_picture_decoded = base64.b64decode(profile_picture_encoded)
-        return send_file(io.BytesIO(profile_picture_decoded), mimetype='image/jpeg')
+        return decode_img(user["profile_picture"])
     else:
         return jsonify({"error": "Profile picture not found"}), 404
+
+@bp.route('/view_user_image/<user_id>/<image_index>', methods=['GET'])
+def view_user_image(user_id, image_index):
+    try:
+        db = current_app.db
+        user = db['users'].find_one({"_id": ObjectId(user_id)})
+        if user and user.get("images"):
+            image_index = int(image_index)
+            if 0 <= image_index < len(user["images"]):
+                return decode_img(user["images"][image_index])
+            else:
+                return jsonify({"error": "Image index out of range"}), 404
+        else:
+            return jsonify({"error": "User or images not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# due to multiple inputs, pass inputs in args like
+# curl -X GET "http://127.0.0.1:5000/get_users?user_id=679486f52cbb9e9a76e75104&age=25&gender=Male"
+@bp.route('/get_users', methods=['GET'])
+def get_users():
+    user_id = request.args.get('user_id')
+    filters = request.args.to_dict()
+    filters.pop('user_id', None)  # Remove user_id from filters
+
+    if not ObjectId.is_valid(user_id):
+        return jsonify({"error": "Invalid logged in user ID"}), 400
+
+    try:
+        db = current_app.db
+        user_model = User(db)
+        
+        query = {"_id": {"$ne": ObjectId(user_id)}}
+        
+        # Apply filters
+        for key, value in filters.items():
+            query[key] = value
+
+        users = list(db['users'].find(query))
+        for user in users:
+            user["_id"] = str(user["_id"])  # Convert ObjectId to string for JSON serialization
+            if "house_id" in user and user["house_id"]:
+                user["house_id"] = str(user["house_id"])  # Convert house_id to string if it exists
+
+        return jsonify(users), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

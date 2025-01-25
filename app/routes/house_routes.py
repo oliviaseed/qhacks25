@@ -1,12 +1,24 @@
-from flask import Blueprint, request, jsonify, current_app, send_file
+from flask import Blueprint, request, jsonify, current_app
 from bson import ObjectId
-from app.models import User, House
-import base64
-import io
+from app.models import User, House, HOUSE_REQUIRED_FIELDS
 from ..services.misc_services import encode_img, decode_img
 
 bp = Blueprint("house_routes", __name__)
 
+@bp.route('/get_house/<house_id>', methods=['GET'])
+def get_user(house_id):
+    if not ObjectId.is_valid(house_id):
+        return jsonify({"error": "Invalid user ID"}), 400
+
+    db = current_app.db
+    house_model = House(db)
+    house = house_model.find_by_id(house_id)
+    if house:
+        house["_id"] = str(house["_id"])  # Convert ObjectId to string for JSON serialization
+        return jsonify(house), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+  
 @bp.route('/add_house/<user_id>', methods=['POST'])
 def add_house(user_id):
     # Validate the user_id
@@ -18,9 +30,7 @@ def add_house(user_id):
     if not data:
         return jsonify({"error": "Invalid request, no data provided"}), 400
 
-    # Ensure required fields for the house listing are provided
-    required_fields = ["type", "rooms_available", "rent", "utilities_included"]
-    for field in required_fields:
+    for field in HOUSE_REQUIRED_FIELDS:
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
         
@@ -38,7 +48,7 @@ def add_house(user_id):
         house_id = house_model.create(data)
         user_model.update_is_listing(user_id, house_id)
 
-        return jsonify({"message": "House added", "user_id": str(house_id)}), 201
+        return jsonify({"message": "House added", "house_id": str(house_id)}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -51,6 +61,11 @@ def update_house(house_id):
         db = current_app.db
         house = db['houses'].find_one({"_id": ObjectId(house_id)})
         if house:
+            if "images" in data and data["images"]:
+                images_encoded = []
+                for image_path in data["images"]:
+                    images_encoded.append(encode_img(image_path))
+                data['images'] = images_encoded
             db['houses'].update_one({"_id": ObjectId(house_id)}, {"$set": data})
             return jsonify({"message": "House listing updated"}), 200
     except Exception as e:
