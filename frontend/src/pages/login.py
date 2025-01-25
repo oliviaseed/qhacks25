@@ -1,6 +1,6 @@
 import streamlit as st
 import hashlib
-from db import get_mongo_db
+from src.utils.db import get_mongo_db
 
 db = get_mongo_db()
 users_collection = db["users"]
@@ -41,6 +41,7 @@ else:
             st.session_state.logged_in = True
             st.session_state.user = user
             login_status.success('Login successful!')
-            st.query_params(logged_in="true")  # Refresh the page to show the logged-in state
+            st.query_params["logged_in"] = "true"  # Refresh the page to show the logged-in state
+            st.rerun()
         else:
             login_status.error('Invalid email or password. Please try again.')
