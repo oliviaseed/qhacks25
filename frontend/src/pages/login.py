@@ -1,6 +1,6 @@
 import streamlit as st
-import hashlib
 from src.utils.db import get_mongo_db
+from src.utils.auth import authenticate_user, set_cookies, clear_cookies, logout
 from streamlit_cookies_manager import EncryptedCookieManager
 from bson import ObjectId
 from dotenv import load_dotenv
@@ -16,39 +16,11 @@ if not cookie_password:
     st.stop()
 
 cookies = EncryptedCookieManager(password=cookie_password)
+if not cookies.ready():
+    st.stop()
 
 db = get_mongo_db()
 users_collection = db["users"]
-
-def logout():
-    st.session_state.logged_in = False
-    st.session_state.user = None
-    clear_cookies()
-
-# Function to hash passwords
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-# Function to authenticate user
-def authenticate_user(email, password):
-    email = email.strip()  # Remove leading/trailing whitespace
-    user = users_collection.find_one({"email": email})
-    if user and user["password"] == password:
-    # if user and user["password"] == hash_password(password):
-        return user
-    return None
-
-# Function to set cookies
-def set_cookies(user):
-    cookies["logged_in"] = "true"
-    cookies["user_id"] = str(user["_id"])
-    cookies.save()
-
-# Function to clear cookies
-def clear_cookies():
-    cookies["logged_in"] = "false"
-    cookies["user_id"] = ""
-    cookies.save()
 
 # Check if user is already logged in
 if 'logged_in' not in st.session_state:
@@ -71,6 +43,7 @@ if st.session_state.logged_in:
     st.write('You are now logged in.')
     if st.button("Logout"):
         logout()
+        st.rerun()  # Refresh the page to show the logged-out state
 else:
     # User input for login
         email = st.text_input('Email:')

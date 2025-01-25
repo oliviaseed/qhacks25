@@ -139,7 +139,6 @@ if st.session_state.logged_in:
                         response_json = response.json()
                         file_path = response_json.get("file_path")
                         images.append(file_path)
-                        print("YES IMG UPLOADED!!!!")
                     except requests.exceptions.JSONDecodeError:
                         st.error("Error uploading image: Invalid JSON response")
                 else:
