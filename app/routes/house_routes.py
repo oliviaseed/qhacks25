@@ -1,6 +1,9 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, send_file
 from bson import ObjectId
 from app.models import User, House
+import base64
+import io
+from ..services.misc_services import encode_img, decode_img
 
 bp = Blueprint("house_routes", __name__)
 
@@ -38,3 +41,34 @@ def add_house(user_id):
         return jsonify({"message": "House added", "user_id": str(house_id)}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@bp.route('/update_house/<house_id>', methods=['PATCH'])
+def update_house(house_id):
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+    try:
+        db = current_app.db
+        house = db['houses'].find_one({"_id": ObjectId(house_id)})
+        if house:
+            db['houses'].update_one({"_id": ObjectId(house_id)}, {"$set": data})
+            return jsonify({"message": "House listing updated"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@bp.route('/view_house_image/<house_id>/<image_index>', methods=['GET'])
+def view_house_image(house_id, image_index):
+    try:
+        db = current_app.db
+        house = db['houses'].find_one({"_id": ObjectId(house_id)})
+        if house and house.get("images"):
+            image_index = int(image_index)
+            if 0 <= image_index < len(house["images"]):
+                return decode_img(house["images"][image_index])
+            else:
+                return jsonify({"error": "Image index out of range"}), 404
+        else:
+            return jsonify({"error": "House or images not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    

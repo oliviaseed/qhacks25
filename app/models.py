@@ -1,6 +1,6 @@
 from bson import ObjectId
 from datetime import datetime
-import base64
+from .services.misc_services import encode_img
 
 class User:
     def __init__(self, db):
@@ -10,13 +10,11 @@ class User:
         """
         Create a new user document in the database.
         """
-        #TODO: preferences, images, etc.
+        #TODO: preferences, etc.
 
-        if user_data["profile_picture"] is None:
-            profile_picture_encoded = None
-        else:
-            with open(user_data["profile_picture"], "rb") as image_file:
-                profile_picture_encoded = base64.b64encode(image_file.read()).decode('utf-8')
+        profile_picture_encoded = None
+        if "profile_picture" in user_data and user_data["profile_picture"]:
+            profile_picture_encoded = encode_img(user_data["profile_picture"])
 
         user = {
             "username": user_data["username"],
@@ -59,11 +57,18 @@ class House:
         """
         Create a new house document in the database.
         """
+        
+        images_encoded = []
+        if "images" in house_data and house_data["images"]:
+            for image_path in house_data["images"]:
+                images_encoded.append(encode_img(image_path))
+
         house = {
             "type": house_data["type"],
             "rooms_available": house_data["rooms_available"],
             "rent": house_data["rent"],
             "utilities_included": house_data["utilities_included"],
+            "images": images_encoded,
             "created_at": datetime.utcnow()
         }
         return self.collection.insert_one(house).inserted_id
