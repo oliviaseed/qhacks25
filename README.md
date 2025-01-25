@@ -34,6 +34,11 @@ curl -X GET http://127.0.0.1:5000/matches/USER_ID
 ```
 ex. USER_ID=679486f52cbb9e9a76e75104
 
+Delete match:
+```
+curl -X DELETE http://127.0.0.1:5000/remove_match/MATCH_ID
+```
+
 Send message (replace MATCH_ID, SENDER_ID, RECEIVER_ID):
 ```
 curl -X POST http://127.0.0.1:5000/send_message -H "Content-Type: application/json" -d "{ \"match_id\": \"MATCH_ID\", \"sender_id\": \"SENDER_ID\", \"receiver_id\": \"RECEIVER_ID\", \"message\": \"Hey, how are you? winkyface\"}"

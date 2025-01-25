@@ -89,3 +89,35 @@ def get_matches(user_id):
         return jsonify({"matches": match_list}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@bp.route('/remove_match/<match_id>', methods=['DELETE'])
+def remove_match(match_id):
+    if not ObjectId.is_valid(match_id):
+        return jsonify({"error": "Invalid match ID"}), 400
+
+    try:
+        db = current_app.db
+        match = db.matches.find_one({"_id": ObjectId(match_id)})
+
+        if not match:
+            return jsonify({"error": "Match not found"}), 404
+
+        user1_id = match["user1_id"]
+        user2_id = match["user2_id"]
+
+        # Remove the match from the matches collection
+        db.matches.delete_one({"_id": ObjectId(match_id)})
+
+        # Update the swipes status for both users
+        db.users.update_one(
+            {"_id": ObjectId(user1_id), "swipes.target_user_id": user2_id},
+            {"$set": {"swipes.$.status": "liked"}}
+        )
+        db.users.update_one(
+            {"_id": ObjectId(user2_id), "swipes.target_user_id": user1_id},
+            {"$set": {"swipes.$.status": "liked"}}
+        )
+
+        return jsonify({"message": "Match removed"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
