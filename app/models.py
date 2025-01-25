@@ -1,5 +1,6 @@
 from bson import ObjectId
 from datetime import datetime
+import base64
 
 class User:
     def __init__(self, db):
@@ -10,6 +11,13 @@ class User:
         Create a new user document in the database.
         """
         #TODO: preferences, images, etc.
+
+        if user_data["profile_picture"] is None:
+            profile_picture_encoded = None
+        else:
+            with open(user_data["profile_picture"], "rb") as image_file:
+                profile_picture_encoded = base64.b64encode(image_file.read()).decode('utf-8')
+
         user = {
             "username": user_data["username"],
             "email": user_data["email"],
@@ -20,6 +28,7 @@ class User:
             "is_listing": user_data.get("is_listing", False),
             "house_id": None,
             "swipes": [],
+            "profile_picture": profile_picture_encoded,
             "created_at": datetime.utcnow()
         }
         return self.collection.insert_one(user).inserted_id
