@@ -1,50 +1,48 @@
 import streamlit as st
 from st_clickable_images import clickable_images
 # logo
+# st.image()
 st.title('RoomieU')
 st.write('Find your perfect housemate!')
 st.divider()
-# Sidebar for navigation
-st.sidebar.title('Navigation')
-page = st.sidebar.radio('Go to', ['Profile', 'Match', 'Chat', 'Settings'])
 
-# image
+# Create columns for the buttons
+
+
+# Place buttons in columns
 with st.container():
+    col1, col2, col3 = st.columns(3, gap="small",vertical_alignment="center")
+    with col1:
+        st.button(" ", icon=":material/person:")
+
+    with col2:
+        st.button(" ", icon=":material/home:")
+
+    with col3:
+        st.button(" ", icon=":material/chat_bubble:")
+    
+
+# profiles
+main_container = st.container(border=True)
+with main_container:
+    col1, col2 = st.columns(2, vertical_alignment="center")
     st.image("nia.jpg")
+    main_container.write("Nia, Engineering Undergrad")
 
 
-# backen function to execute matching button clicks
-def clicked():
-    pass
 
-# yes and no buttons
-st.button(" ", icon=":material/close:")
 
-clicked_image = clickable_images(
-    [
-        "images\left.png",  # Replace with your image path
-        "images\yes.png"  # Replace with your image path
-    ],
-    titles=["No", "Yes"],
-    div_style={"display": "flex", "justify-content": "center", "flex-wrap": "wrap"},
-    img_style={"margin": "10px", "height": "100px"}
-)
 
-if clicked_image == 0:
-    clicked()
-elif clicked_image == 1:
-    clicked()
+# Create columns for the yes and no buttons
+col5, col6 = st.columns(2)
 
+# Place yes and no buttons in columns
+with col5:
+    st.button(" ", icon=":material/cancel:")
+
+with col6:
+    st.button(" ", icon=":material/check_circle:")
 
 st.divider()
-# page buttons
-with st.container():
-    col1, col2, col3, col4 = st.columns(4)
-    st.button('Profile')
-    st.button('Match')
-    st.button('Chat')
-    st.button('Settings')
-st.image("images\home.png")
-st.image("images\chat.png")
-st.image("images\match.png")
-st.image("images\profile.png")
+
+
