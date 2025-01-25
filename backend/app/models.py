@@ -2,7 +2,7 @@ from bson import ObjectId
 from datetime import datetime
 from .utils.image import encode_img
 
-USER_REQUIRED_FIELDS = ["first_name", "last_name", "email", "password", "school", "age", "gender"]
+USER_REQUIRED_FIELDS = ["first_name", "last_name", "email", "password", "school", "birthday", "gender"]
 HOUSE_REQUIRED_FIELDS = ["type", "rooms_available", "rent", "utilities_included", "bathrooms", "address", "city", "province", "lease_length", "available_from"]
 
 class User:
@@ -28,9 +28,8 @@ class User:
             "email": user_data["email"],
             "password": user_data["password"],  # TODO: Hash password
             "school": user_data["school"],
-            "age": user_data["age"],
+            "birthday": user_data["birthday"],
             "gender": user_data["gender"],
-            "bio": user_data["bio"],
             "is_listing": user_data.get("is_listing", False),
             "house_id": None,
             "swipes": [],

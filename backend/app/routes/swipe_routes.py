@@ -84,7 +84,18 @@ def get_matches(user_id):
             {"user2_id": user_id}
         ]})
 
-        match_list = [{"match_id": str(match["_id"]), "user1_id": match["user1_id"], "user2_id": match["user2_id"], "matched_on": match["matched_on"], "last_message": match["last_message"]} for match in matches]
+        match_list = []
+        for match in matches:
+            user1 = db.users.find_one({"_id": ObjectId(match["user1_id"])})
+            user2 = db.users.find_one({"_id": ObjectId(match["user2_id"])})
+            match_info = {
+                "match_id": str(match["_id"]),
+                "user1_id": match["user1_id"],
+                "user2_id": match["user2_id"],
+                "matched_on": match["matched_on"],
+                "last_message": match.get("last_message")  # Use get method to safely access last_message
+            }
+            match_list.append(match_info)
 
         return jsonify({"matches": match_list}), 200
     except Exception as e:

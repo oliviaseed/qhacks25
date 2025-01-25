@@ -1,0 +1,14 @@
+[theme]
+primaryColor = "#6FB3B8"  # Button Background (Calm Teal)
+backgroundColor = "#FAFAF9"  # Background Color (Very Light Cream)
+secondaryBackgroundColor = "#E5EAF0"  # Feature Section Background (Light Blue Gray)
+textColor = "#333333"  # Text Color (Dark Gray)
+
+[custom]
+headerBackground = "#B3CDE0"  # Header Background (Soft Blue)
+heroBackground = "#F7A399"  # Hero Section Background (Light Coral)
+footerBackground = "#333333"  # Footer Background (Dark Gray)
+footerLinkColor = "#6FB3B8"  # Footer Text and Links (Calm Teal)
+
+[button]
+hoverColor = "#5F9DA3"  # Button Hover Background (Darker Teal)
