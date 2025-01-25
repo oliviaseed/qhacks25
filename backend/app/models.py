@@ -30,7 +30,6 @@ class User:
             "school": user_data["school"],
             "birthday": user_data["birthday"],
             "gender": user_data["gender"],
-            "bio": user_data["bio"],
             "is_listing": user_data.get("is_listing", False),
             "house_id": None,
             "swipes": [],
