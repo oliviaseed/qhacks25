@@ -1,0 +1,5 @@
+Flask==2.x
+pymongo==4.x
+pytest==7.x
+python-dotenv==1.x
+bcrypt==4.x
