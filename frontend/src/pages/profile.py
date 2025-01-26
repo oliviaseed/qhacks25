@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 
-st.set_page_config(page_title="RoomieU - Profile Page", layout="wide", page_icon="🏠")
+st.set_page_config(page_title="profile", layout="wide")
 
 # Colors and styling
 BACKGROUND_COLOR = "#FAFAF9"
@@ -18,144 +18,79 @@ st.markdown(
     
     .header {{
         background-color: {HEADER_COLOR};
-        padding: 1.5rem;
+        padding: 0.5rem;
         border-radius: 8px;
         text-align: center;
         color: {TEXT_COLOR};
-        font-size: 7rem;  /* Doubled from 3.5rem */
+        font-size: 1.2rem;
         font-weight: bold;
-        margin-bottom: 3rem;  /* Increased for better spacing */
+        margin-bottom: 1rem;
     }}
     
     .subheader {{
         color: {TEXT_COLOR};
-        font-size: 4rem;  /* Doubled from 2rem */
-        font-weight: 600;
-        margin: 2rem 0;
-    }}
-    
-    /* Form element styling */
-    div[data-baseweb="select"] span,
-    div[data-baseweb="select"] div {{
-        font-size: 36px !important;  /* Doubled from 18px */
-    }}
-    
-    .stRadio label,
-    .stRadio div {{
-        font-size: 36px !important;  /* Doubled from 18px */
-    }}
-    
-    .stNumberInput input,
-    .stTextInput input,
-    .stTextArea textarea {{
-        font-size: 36px !important;  /* Doubled from 18px */
-        line-height: 1.5 !important;
-    }}
-    
-    div[data-baseweb="multiselect"] span,
-    div[data-baseweb="multiselect"] div {{
-        font-size: 36px !important;  /* Doubled from 18px */
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
     }}
     
     .custom-label {{
-        font-size: 40px;  /* Doubled from 20px */
+        font-size: 0.9rem;
         color: {TEXT_COLOR};
-        margin: 1.5rem 0 1rem 0;  /* Increased for better spacing */
+        margin-bottom: 0.3rem;
         font-weight: 500;
     }}
     
     .placeholder {{
         background-color: #D3D3D3;
-        width: 350px;
-        height: 350px;
-        display: inline-block;
-        margin: 5px;
+        width: 100%;
+        height: 150px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         text-align: center;
-        line-height: 350px;
         color: {TEXT_COLOR};
-        font-size: 4rem;  /* Doubled from 2rem */
+        border-radius: 8px;
+        font-size: 0.9rem;
     }}
     
-    /* Upload button styling */
-    .uploadedFile {{
-        font-size: 32px !important;  /* Doubled from 16px */
+    .stSelectbox div[data-baseweb="select"],
+    .stMultiSelect div[data-baseweb="select"] {{
+        font-size: 0.85rem !important;
+        padding: 0.2rem 0.5rem !important;
+    }}
+    
+    .stNumberInput input,
+    .stTextInput input,
+    .stTextArea textarea {{
+        font-size: 0.85rem !important;
+        padding: 0.2rem 0.5rem !important;
     }}
     
     .stButton button {{
-        font-size: 36px !important;  /* Doubled from 18px */
-        padding: 1rem 2rem !important;  /* Increased padding for better button sizing */
+        font-size: 0.9rem !important;
+        padding: 0.4rem 0.8rem !important;
+        background-color: {BUTTON_COLOR};
+        color: white;
+        border: none;
+        border-radius: 8px;
     }}
-
-    /* Uniform height for all form elements */
-    .stSelectbox > div,
-    .stMultiSelect > div,
-    .stNumberInput > div,
-    .stTextInput > div {{
-        min-height: 80px !important;
-    }}
-
-    /* Target the inner containers */
-    .stSelectbox > div > div,
-    .stMultiSelect > div > div,
-    .stNumberInput > div > div,
-    .stTextInput > div > div {{
-        min-height: 80px !important;
-        height: 80px !important;
-    }}
-
-    /* Target the actual input elements */
-    .stSelectbox > div > div > div,
-    .stMultiSelect > div > div > div,
-    .stNumberInput > div > div > input,
-    .stTextInput > div > div > input {{
-        min-height: 80px !important;
-        height: 80px !important;
-        padding: 0.5rem !important;
-    }}
-
-    /* Radio button height consistency */
-    .stRadio > div {{
-        padding: 0.5rem !important;
-        min-height: 80px !important;
-    }}
-
-    /* Special handling for select dropdowns to align content */
-    .stSelectbox [data-baseweb="select"] > div:first-child,
-    .stMultiSelect [data-baseweb="select"] > div:first-child {{
-        height: 80px !important;
-        min-height: 80px !important;
-        display: flex !important;
-        align-items: center !important;
-    }}
-
-    /* Keep text area (Interests/Hobbies) different */
-    .stTextArea textarea {{
-        min-height: 150px !important;
-    }}
-
-    /* Streamlit markdown text */
-    .css-10trblm {{
-        font-size: 36px !important;
-    }}
-
-    /* Streamlit default text */
-    .css-1dp5vir {{
-        font-size: 36px !important;
-    }}
-
-    /* File uploader text */
-    .css-1x8cf1d {{
-        font-size: 36px !important;
-    }}
-
-    /* Additional elements */
-    p, span, div {{
-        font-size: 36px !important;
-    }}
-
-    /* Increase spacing between form elements */
+    
     .stSelectbox, .stNumberInput, .stTextInput, .stTextArea, .stRadio, .stMultiSelect {{
-        margin-bottom: 2rem !important;
+        margin-bottom: 1.5rem;
+    }}
+
+    .stNumberInput > div {{
+        border: none !important; /* Remove the container border */
+        background-color: transparent !important; /* Make the background transparent */
+        box-shadow: none !important; /* Remove any shadow effect */
+    }}
+
+    .stNumberInput input {{
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important; /* Remove the focus outline */
+        background-color: transparent !important; /* Optional: Make the background transparent */
     }}
     </style>
     """,
@@ -177,12 +112,12 @@ with col1:
     
     custom_label("Upload Personal Pictures")
     personal_images = st.file_uploader("", accept_multiple_files=True, key="personal_pics")
-    cols = st.columns(4, gap="small")
+    cols = st.columns(4)
     for i in range(4):
         with cols[i]:
             if personal_images and len(personal_images) > i:
                 img = Image.open(personal_images[i])
-                st.image(img, width=350)
+                st.image(img, use_column_width=True)
             else:
                 st.markdown(f'<div class="placeholder">+</div>', unsafe_allow_html=True)
 
@@ -201,10 +136,7 @@ with col1:
     custom_label("Cleanliness Level")
     st.selectbox(
         "",
-        ["Always Clean: Shared spaces should always be tidy.",
-         "Mostly Clean: Some clutter is fine, but no mess.",
-         "Casual: A bit of mess is okay in shared spaces.",
-         "Flexible: I can adapt to others' preferences."],
+        ["Always Clean", "Mostly Clean", "Casual", "Flexible"],
         key="cleanliness_level"
     )
     
@@ -229,12 +161,12 @@ with col2:
     
     custom_label("Upload Housing Pictures")
     housing_images = st.file_uploader("", accept_multiple_files=True, key="housing_pics")
-    cols = st.columns(4, gap="small")
+    cols = st.columns(4)
     for i in range(4):
         with cols[i]:
             if housing_images and len(housing_images) > i:
                 img = Image.open(housing_images[i])
-                st.image(img, width=350)
+                st.image(img, use_column_width=True)
             else:
                 st.markdown(f'<div class="placeholder">+</div>', unsafe_allow_html=True)
 
