@@ -60,19 +60,19 @@ def upload_image(file):
     return response
 
 def upload_images(images):
-    images = []
-    for uploaded_file in personal_images:
+    encoded_images = []
+    for uploaded_file in images:
         response = upload_image(uploaded_file)
         if response.status_code == 200:
             try:
                 response_json = response.json()
                 file_path = response_json.get("file_path")
-                images.append(file_path)
+                encoded_images.append(file_path)
             except requests.exceptions.JSONDecodeError:
                 st.error("Error uploading image: Invalid JSON response")
         else:
             st.error(f"Error uploading image: {response.content.decode('utf-8')}")
-    return images
+    return encoded_images
 
 # Authentication and Profile Page
 if st.session_state.logged_in:
@@ -93,12 +93,12 @@ if st.session_state.logged_in:
 
         st.markdown('<div class="custom-label">Upload Personal Pictures</div>', unsafe_allow_html=True)
         personal_images = st.file_uploader("", accept_multiple_files=True, key="personal_pics")
-        # if personal_images:
-        #     cols = st.columns(len(personal_images))
-        #     for i, img_file in enumerate(personal_images):
-        #         with cols[i]:
-        #             img = Image.open(img_file)
-        #             st.image(img, use_column_width=True)
+        if personal_images:
+            cols = st.columns(len(personal_images))
+            for i, img_file in enumerate(personal_images):
+                with cols[i]:
+                    img = Image.open(img_file)
+                    st.image(img, use_column_width=True)
 
     user = users_collection.find_one({"_id": ObjectId(user_id)})
     if user:
@@ -165,6 +165,7 @@ if st.session_state.logged_in:
         if housing_images:
             images = upload_images(housing_images)
             house_data["images"] = images
+            print("TEST!!:)")
 
         # Remove empty fields from the data
         user_data = {k: v for k, v in user_data.items() if v}
