@@ -39,11 +39,6 @@ def add_house(user_id):
         user_model = User(db)
         house_model = House(db)
 
-        required_fields = ["type", "rooms_available", "rent", "utilities_included"]
-        for field in required_fields:
-            if field not in data or data[field] is None:
-                return jsonify({"error": f"Missing required house field: {field}"}), 400
-
         # Create the house
         house_id = house_model.create(data)
         user_model.update_is_listing(user_id, house_id)
@@ -67,6 +62,7 @@ def update_house(house_id):
                     images_encoded.append(encode_img(image_path))
                 data['images'] = images_encoded
             db['houses'].update_one({"_id": ObjectId(house_id)}, {"$set": data})
+            print("updated house")
             return jsonify({"message": "House listing updated"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

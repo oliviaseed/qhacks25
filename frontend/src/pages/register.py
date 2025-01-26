@@ -1,8 +1,14 @@
 import streamlit as st
 import requests
-import json
 import re
 from datetime import datetime, timedelta
+from src.utils.auth import setup_auth
+
+cookies, users_collection, login_status = setup_auth()
+
+# Redirect to home page if already logged in
+if cookies.get("logged_in") == "true":
+    st.switch_page("home.py")
 
 st.title("User Registration")
 

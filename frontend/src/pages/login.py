@@ -1,7 +1,13 @@
 import streamlit as st
 from src.utils.auth import setup_auth, authenticate_user, set_cookies, clear_cookies, logout
 
-cookies, users_collection, login_status = setup_auth()
+cookies, db, login_status = setup_auth()
+users_collection = db["users"]
+
+# Check if user is already logged in
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.user = None
 
 if st.session_state.logged_in:
     st.success(f"Welcome {st.session_state.user['first_name']}!")

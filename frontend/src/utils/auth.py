@@ -45,7 +45,7 @@ def setup_auth():
     # Placeholder for login status
     login_status = st.empty()
 
-    return cookies, users_collection, login_status
+    return cookies, db, login_status
 
 def logout(cookies):
     st.session_state.logged_in = False
