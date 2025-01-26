@@ -56,8 +56,8 @@ def update_house(house_id):
         db = current_app.db
         house = db['houses'].find_one({"_id": ObjectId(house_id)})
         if house:
+            images_encoded = []
             if "images" in data and data["images"]:
-                images_encoded = []
                 for image_path in data["images"]:
                     images_encoded.append(encode_img(image_path))
                 data['images'] = images_encoded

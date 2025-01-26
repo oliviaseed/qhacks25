@@ -4,8 +4,16 @@ import requests
 import json
 from src.utils.auth import setup_auth
 from bson import ObjectId
-
+import base64
 import time
+
+def encode_img(image_file):
+    try:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return None
+
 
 cookies, db, login_status = setup_auth()
 # timeout = 10  # seconds
@@ -55,7 +63,7 @@ def create_house(user_id, data):
 # Function to upload image
 def upload_image(file):
     url = "http://127.0.0.1:5000/upload_image"
-    files = {'file': file}
+    files = {'file': (file.name, file.getvalue(), file.type)}
     response = requests.post(url, files=files)
     return response
 
