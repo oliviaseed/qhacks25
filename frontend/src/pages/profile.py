@@ -184,7 +184,7 @@ if st.session_state.logged_in:
         elif house_data:
             response = create_house(user_id, house_data)
             if response.status_code == 200:
-                st.success("House updated successfully!")
+                st.success("House created successfully!")
             else:
                 st.error(f"Error: {response.json().get('error', 'Unknown error')}")
 
