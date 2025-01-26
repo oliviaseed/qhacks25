@@ -30,9 +30,9 @@ def add_house(user_id):
     if not data:
         return jsonify({"error": "Invalid request, no data provided"}), 400
 
-    for field in HOUSE_REQUIRED_FIELDS:
-        if field not in data:
-            return jsonify({"error": f"Missing required field: {field}"}), 400
+    # for field in HOUSE_REQUIRED_FIELDS:
+    #     if field not in data:
+    #         return jsonify({"error": f"Missing required field: {field}"}), 400
         
     try:
         db = current_app.db

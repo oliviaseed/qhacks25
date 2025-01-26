@@ -22,9 +22,9 @@ def swipe():
         # Fetch the users
         db = current_app.db
         user = db.users.find_one({"_id": ObjectId(user_id)})
-        target_user = db.users.find_one({"_id": ObjectId(target_user_id)})
+        target = db.users.find_one({"_id": ObjectId(target_user_id)})
 
-        if not user or not target_user:
+        if not user or not target:
             return jsonify({"error": "User(s) not found"}), 404
 
         # Add the swipe to the user's swipes list

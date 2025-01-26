@@ -121,7 +121,8 @@ def send_message(match_id, sender_id, receiver_id, message):
     except requests.exceptions.RequestException as e:
         st.error(f"An error occurred: {e}")
 
-
+# Page Layout
+# st.set_page_config(layout="wide")
 
 # Hide Streamlit default menu and footer
 st.markdown(
