@@ -4,6 +4,18 @@ from src.utils.auth import setup_auth, authenticate_user, set_cookies, clear_coo
 cookies, db, login_status = setup_auth()
 users_collection = db["users"]
 
+# Hide Streamlit default menu and footer
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # Check if user is already logged in
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
