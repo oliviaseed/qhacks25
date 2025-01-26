@@ -87,281 +87,115 @@ if st.session_state.logged_in:
     st.success(f"Welcome {st.session_state.user['first_name']}!")
     
     # Layout for Personal and Housing sections
-st.set_page_config(page_title="profile", layout="wide")
+    st.markdown('<div class="header">RoomieU - Profile Page</div>', unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
 
-# Colors and styling
-BACKGROUND_COLOR = "#FAFAF9"
-HEADER_COLOR = "#B3CDE0"
-BUTTON_COLOR = "#6FB3B8"
-TEXT_COLOR = "#333333"
+    # Personal Section
+    with col1:
+        st.subheader("Personal Information")
+        email = st.text_input("Email", value=st.session_state.user.get("email", ""))
+        first_name = st.text_input("First Name", value=st.session_state.user.get("first_name", ""))
+        last_name = st.text_input("Last Name", value=st.session_state.user.get("last_name", ""))
+        school = st.text_input("School", value=st.session_state.user.get("school", ""))
+        bio = st.text_area("Bio", value=st.session_state.user.get("bio", ""))
 
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background-color: {BACKGROUND_COLOR};
-    }}
-    
-    .header {{
-        background-color: {HEADER_COLOR};
-        padding: 1.5rem;
-        border-radius: 8px;
-        text-align: center;
-        color: {TEXT_COLOR};
-        font-size: 7rem;  /* Doubled from 3.5rem */
-        font-weight: bold;
-        margin-bottom: 3rem;  /* Increased for better spacing */
-    }}
-    
-    .subheader {{
-        color: {TEXT_COLOR};
-        font-size: 4rem;  /* Doubled from 2rem */
-        font-weight: 600;
-        margin: 2rem 0;
-    }}
-    
-    /* Form element styling */
-    div[data-baseweb="select"] span,
-    div[data-baseweb="select"] div {{
-        font-size: 36px !important;  /* Doubled from 18px */
-    }}
-    
-    .stRadio label,
-    .stRadio div {{
-        font-size: 36px !important;  /* Doubled from 18px */
-    }}
-    
-    .stNumberInput input,
-    .stTextInput input,
-    .stTextArea textarea {{
-        font-size: 36px !important;  /* Doubled from 18px */
-        line-height: 1.5 !important;
-    }}
-    
-    div[data-baseweb="multiselect"] span,
-    div[data-baseweb="multiselect"] div {{
-        font-size: 36px !important;  /* Doubled from 18px */
-    }}
-    
-    .custom-label {{
-        font-size: 40px;  /* Doubled from 20px */
-        color: {TEXT_COLOR};
-        margin: 1.5rem 0 1rem 0;  /* Increased for better spacing */
-        font-weight: 500;
-    }}
-    
-    .placeholder {{
-        background-color: #D3D3D3;
-        width: 350px;
-        height: 350px;
-        display: inline-block;
-        margin: 5px;
-        text-align: center;
-        line-height: 350px;
-        color: {TEXT_COLOR};
-        font-size: 4rem;  /* Doubled from 2rem */
-    }}
-    
-    /* Upload button styling */
-    .uploadedFile {{
-        font-size: 32px !important;  /* Doubled from 16px */
-    }}
-    
-    .stButton button {{
-        font-size: 36px !important;  /* Doubled from 18px */
-        padding: 1rem 2rem !important;  /* Increased padding for better button sizing */
-    }}
+        st.markdown('<div class="custom-label">Upload Personal Pictures</div>', unsafe_allow_html=True)
+        personal_images = st.file_uploader("", accept_multiple_files=True, key="personal_pics")
+        if personal_images:
+            cols = st.columns(len(personal_images))
+            for i, img_file in enumerate(personal_images):
+                with cols[i]:
+                    img = Image.open(img_file)
+                    st.image(img, use_column_width=True)
 
-    /* Uniform height for all form elements */
-    .stSelectbox > div,
-    .stMultiSelect > div,
-    .stNumberInput > div,
-    .stTextInput > div {{
-        min-height: 80px !important;
-    }}
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user:
+        st.session_state.logged_in = True
+        st.session_state.user = user
+    # Housing Section
+    with col2:
+        st.subheader("Housing Information")
+        house_id = st.session_state.user.get("house_id", "")
+        house = houses_collection.find_one({"_id": ObjectId(house_id)})
+        if house is None:
+            house = {}
+        rent = st.text_input("Rent ($)", value=house.get("rent", "-"))
+        utilities_included = st.checkbox("Utilities Included", value=house.get("utilities_included", False))
+        rooms_available = st.text_input("Rooms Available", value=house.get("rooms_available", "1"))
+        bathrooms = st.text_input("Bathrooms", value=house.get("bathrooms", "1"))
+        address = st.text_input("Address", value=house.get("address", ""))
+        city = st.text_input("City", value=house.get("city", ""))
+        province = st.text_input("Province", value=house.get("province", ""))
+        lease_length = st.text_input("Lease Length (months)", value=house.get("lease_length", "12"))
+        available_from = st.date_input("Available From", value=house.get("available_from", None))
+        house_type = st.selectbox(
+            "House Type",
+            ["House", "Apartment", "Studio"],
+            index=["House", "Apartment", "Studio"].index(
+                house.get("house_type", "Apartment")
+            )
+        )
+        st.markdown('<div class="custom-label">Upload Housing Pictures</div>', unsafe_allow_html=True)
+        housing_images = st.file_uploader("", accept_multiple_files=True, key="housing_pics")
+        if housing_images:
+            cols = st.columns(len(housing_images))
+            for i, img_file in enumerate(housing_images):
+                with cols[i]:
+                    img = Image.open(img_file)
+                    st.image(img, use_column_width=True)
 
-    /* Target the inner containers */
-    .stSelectbox > div > div,
-    .stMultiSelect > div > div,
-    .stNumberInput > div > div,
-    .stTextInput > div > div {{
-        min-height: 80px !important;
-        height: 80px !important;
-    }}
+    # Submit Button
+    if st.button("Submit"):
+        user_data = {
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "school": school,
+            "bio": bio,
+        }
 
-    /* Target the actual input elements */
-    .stSelectbox > div > div > div,
-    .stMultiSelect > div > div > div,
-    .stNumberInput > div > div > input,
-    .stTextInput > div > div > input {{
-        min-height: 80px !important;
-        height: 80px !important;
-        padding: 0.5rem !important;
-    }}
+        house_data = {
+            "house_type": house_type,
+            "rooms_available": rooms_available,
+            "rent": rent,
+            "utilities_included": utilities_included,
+            "bathrooms": bathrooms,
+            "address": address,
+            "city": city,
+            "province": province,
+            "lease_length": lease_length,
+            "available_from": available_from.isoformat() if available_from else None,
+        }
+        # Handle image uploads
+        if personal_images:
+            images = upload_images(personal_images)
+            user_data["images"] = images
+        if housing_images:
+            images = upload_images(housing_images)
+            house_data["images"] = images
+            print("TEST!!:)")
 
-    /* Radio button height consistency */
-    .stRadio > div {{
-        padding: 0.5rem !important;
-        min-height: 80px !important;
-    }}
-
-    /* Special handling for select dropdowns to align content */
-    .stSelectbox [data-baseweb="select"] > div:first-child,
-    .stMultiSelect [data-baseweb="select"] > div:first-child {{
-        height: 80px !important;
-        min-height: 80px !important;
-        display: flex !important;
-        align-items: center !important;
-    }}
-
-    /* Keep text area (Interests/Hobbies) different */
-    .stTextArea textarea {{
-        min-height: 150px !important;
-    }}
-
-    /* Streamlit markdown text */
-    .css-10trblm {{
-        font-size: 36px !important;
-    }}
-
-    /* Streamlit default text */
-    .css-1dp5vir {{
-        font-size: 36px !important;
-    }}
-
-    /* File uploader text */
-    .css-1x8cf1d {{
-        font-size: 36px !important;
-    }}
-
-    /* Additional elements */
-    p, span, div {{
-        font-size: 36px !important;
-    }}
-
-    /* Increase spacing between form elements */
-    .stSelectbox, .stNumberInput, .stTextInput, .stTextArea, .stRadio, .stMultiSelect {{
-        margin-bottom: 2rem !important;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-def custom_label(text):
-    st.markdown(f'<div class="custom-label">{text}</div>', unsafe_allow_html=True)
-
-# Header
-st.markdown('<div class="header">RoomieU - Profile Page</div>', unsafe_allow_html=True)
-
-# Layout
-col1, col2 = st.columns(2, gap="medium")
-
-# Personal Section
-with col1:
-    st.markdown('<div class="subheader">Personal Information</div>', unsafe_allow_html=True)
-    
-    custom_label("Upload Personal Pictures")
-    personal_images = st.file_uploader("", accept_multiple_files=True, key="personal_pics")
-    cols = st.columns(4, gap="small")
-    for i in range(4):
-        with cols[i]:
-            if personal_images and len(personal_images) > i:
-                img = Image.open(personal_images[i])
-                st.image(img, width=350)
+        # Remove empty fields from the data
+        user_data = {k: v for k, v in user_data.items() if v}
+        response = update_user(user_id, user_data)
+        if response.status_code == 200:
+            st.success("Profile updated successfully!")
+        else:
+            st.error(f"Error: {response.json().get('error', 'Unknown error')}")
+        
+        house_data = {k: v for k, v in house_data.items() if v}
+        if house_data and house_id:
+            response = update_house(house_id, house_data)
+            if response.status_code == 200:
+                st.success("House updated successfully!")
             else:
-                st.markdown(f'<div class="placeholder">+</div>', unsafe_allow_html=True)
-
-    custom_label("What best describes your situation?")
-    st.selectbox("", ["Looking for a Housemate", "Listing My House/Sublet"], key="housemate_option")
-    
-    custom_label("Gender")
-    st.selectbox("", ["Male", "Female", "Nonbinary", "Other"], key="gender")
-    
-    custom_label("Age")
-    st.number_input("", min_value=0, max_value=150, key="age")
-    
-    custom_label("School, Program, Graduation Year")
-    st.text_input("", key="school_program_year")
-    
-    custom_label("Cleanliness Level")
-    st.selectbox(
-        "",
-        ["Always Clean: Shared spaces should always be tidy.",
-         "Mostly Clean: Some clutter is fine, but no mess.",
-         "Casual: A bit of mess is okay in shared spaces.",
-         "Flexible: I can adapt to others' preferences."],
-        key="cleanliness_level"
-    )
-    
-    custom_label("Schedule Preference")
-    st.selectbox("", ["Early Bird", "Night Owl", "Flexible"], key="schedule_preference")
-    
-    custom_label("Personality Type")
-    st.selectbox("", ["Introvert", "Extrovert", "Ambivert"], key="personality_type")
-    
-    custom_label("Confrontation Style")
-    st.selectbox("", ["Let's Talk About It", "Depends on What It Is", "I Keep Quiet"], key="confrontation_style")
-    
-    custom_label("Pets")
-    st.multiselect("", ["Cat", "Dog", "No Preference", "Don't Like", "Allergic to Pets"], key="pets_preference")
-    
-    custom_label("Interests/Hobbies")
-    st.text_area("", key="hobbies")
-
-# Housing Section
-with col2:
-    st.markdown('<div class="subheader">Housing Information</div>', unsafe_allow_html=True)
-    
-    custom_label("Upload Housing Pictures")
-    housing_images = st.file_uploader("", accept_multiple_files=True, key="housing_pics")
-    cols = st.columns(4, gap="small")
-    for i in range(4):
-        with cols[i]:
-            if housing_images and len(housing_images) > i:
-                img = Image.open(housing_images[i])
-                st.image(img, width=350)
+                st.error(f"Error: {response.json().get('error', 'Unknown error')}")
+        elif house_data:
+            response = create_house(user_id, house_data)
+            if response.status_code == 200:
+                st.success("House created successfully!")
             else:
-                st.markdown(f'<div class="placeholder">+</div>', unsafe_allow_html=True)
+                st.error(f"Error: {response.json().get('error', 'Unknown error')}")
 
-    custom_label("Lease Length")
-    st.selectbox("", ["Short-term (1–6 months)", "Long-term (6+ months)", "Flexible"], key="lease_length")
-    
-    custom_label("Budget (Min-Max)")
-    st.text_input("", key="budget")
-    
-    custom_label("Number of Roommates")
-    st.selectbox("", ["1", "2", "3+", "No Preference"], key="roommates_count")
-    
-    custom_label("School Distance")
-    st.selectbox("", ["On-campus", "Walking Distance", "Public Transport Accessible"], key="school_distance")
-    
-    custom_label("House Type")
-    st.selectbox("", ["House", "Apartment", "Studio"], key="house_type")
-    
-    custom_label("Furnished Status")
-    st.selectbox("", ["Fully Furnished", "Partially Furnished", "Unfurnished"], key="furnished_status")
-    
-    custom_label("Number of Rooms")
-    st.number_input("", min_value=0, key="rooms_count")
-    
-    custom_label("Number of Bathrooms")
-    st.number_input("", min_value=0, key="bathrooms_count")
-    
-    custom_label("Parking")
-    st.selectbox("", ["Yes", "No", "Limited"], key="parking")
-    
-    custom_label("Utilities Included")
-    st.selectbox("", ["Yes", "No", "Partially"], key="utilities_included")
-    
-    custom_label("Laundry")
-    st.selectbox("", ["In-Unit", "Shared", "No Laundry"], key="laundry")
-    
-    custom_label("Dishwasher")
-    st.selectbox("", ["Yes", "No"], key="dishwasher")
-    
-    custom_label("Heating")
-    st.selectbox("", ["Yes", "No"], key="heating")
-    
-    custom_label("Air Conditioning (A/C)")
-    st.selectbox("", ["Yes", "No"], key="ac")
+else:
+    st.error("You must log in to access the profile page.")
