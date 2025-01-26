@@ -24,7 +24,7 @@ ex. USER_ID=679486f52cbb9e9a76e75104
 
 Swipe (replace USER_ID with the swiper's user ID and TARGET_ID with the target/liked user's ID):
 ```
-curl -X POST http://127.0.0.1:5000/swipe -H "Content-Type: application/json" -d "{ \"user_id\": \"679486f52cbb9e9a76e75104\", \"target_user_id\": \"TARGET_ID\", \"action\": \"like\" }"
+curl -X POST http://127.0.0.1:5000/swipe -H "Content-Type: application/json" -d "{ \"user_id\": \"6795a27d24680eddbdea1c72\", \"target_user_id\": \"6795520e824ec3e00f1b04fc\", \"action\": \"like\" }"
 ```
 ex. USER_ID=679486f52cbb9e9a76e75104, 67948c725412ccef7a098212
 
