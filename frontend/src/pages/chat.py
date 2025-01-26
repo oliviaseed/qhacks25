@@ -1,4 +1,8 @@
 import streamlit as st
+
+# Page Layout must be set first
+st.set_page_config(layout="wide")
+
 import requests
 import json
 import time
@@ -6,9 +10,37 @@ import time
 import openai
 from dotenv import load_dotenv
 import os
+from src.utils.auth import setup_auth
+from bson import ObjectId
 # # Periodic update for chat
 # POLLING_INTERVAL = 30  # seconds
 
+
+
+cookies, db, login_status = setup_auth()
+# timeout = 10  # seconds
+# start_time = time.time()
+# while not cookies.ready():
+#     if time.time() - start_time > timeout:
+#         st.error("Cookies manager not ready. Please try again later.")
+#         st.stop()
+#     time.sleep(0.1)
+users_collection = db["users"]
+houses_collection = db["houses"]
+
+# Check login state
+if cookies.get("logged_in") == "true":
+    user_id = cookies.get("user_id")
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user:
+        st.session_state.logged_in = True
+        st.session_state.user = user
+    else:
+        st.session_state.logged_in = False
+        st.session_state.user = None
+else:
+    st.session_state.logged_in = False
+    st.session_state.user = None
 
 # Set OpenAI API key and organization
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -89,8 +121,7 @@ def send_message(match_id, sender_id, receiver_id, message):
     except requests.exceptions.RequestException as e:
         st.error(f"An error occurred: {e}")
 
-# Page Layout
-st.set_page_config(layout="wide")
+
 
 # Hide Streamlit default menu and footer
 st.markdown(
@@ -107,12 +138,16 @@ st.markdown(
 # Custom CSS for layout and match list
 st.markdown(
     """
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+    body {
+        background-color: #FAFAF9;
+    }
     /* Title and button bar */
     .top-bar {
-        background-color: #1E1E1E;
+        background-color: #B3CDE0;
         padding: 15px 20px;
-        color: white;
+        color: black;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -121,7 +156,7 @@ st.markdown(
         margin-bottom: 20px;
     }
     .button-bar {
-        background-color: #333;
+        background-color: #F7A399;
         padding: 10px 20px;
         display: flex;
         justify-content: space-around;
@@ -151,10 +186,9 @@ st.markdown(
         color: gray;
     }
     .custom-button {
-
         width: 100%;
         text-align: left;
-        background-color: blue;
+        background-color: #6FB3B8;
         padding: 15px;
         margin-bottom: 10px;
         border-radius: 8px;
@@ -164,12 +198,13 @@ st.markdown(
         cursor: pointer;
     }
     .custom-button:hover {
-        background-color: #f0f0f0;
+        background-color: #5F9DA3;
     }
     .custom-button .name {
         font-weight: bold;
         font-size: 1rem;
         margin-bottom: 5px;
+        background-color: #6FB3B8;
     }
     .custom-button .message {
         font-size: 0.9rem;
@@ -216,22 +251,55 @@ st.markdown(
         color: gray;
         text-align: right;
     }
+    .header {
+        text-align: center;
+        padding: 15px 0;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        color: black;
+    }
+    .icons {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+    }
+    .icon {
+        cursor: pointer;
+        font-size: 24px;
+        color: #333333;
+    }
+    .icon:hover {
+        color: #6FB3B8;
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Top Bar
+ # Static content for this placeholder file
+st.markdown("<h3 style='text-align: center;'>Find your perfect housemate!</h3>", unsafe_allow_html=True)
+
 st.markdown(
-    """
-    <div class="top-bar">
-        RoomieU
+    f"""
+    <div class="header">
+        <div class="icons">
+            <span class="icon" onclick="window.location.href='chat.py';">
+                <span class="material-icons">chat</span>
+            </span>
+            <span class="icon" onclick="window.location.href='home.py';">
+                <span class="material-icons">home</span>
+            </span>
+            <span class="icon" onclick="window.location.href='profile.py';">
+                <span class="material-icons">person</span>
+            </span>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-user_id = "679551b210c72c24d160e32a"  # Example User ID
+
+# user_id = "679551b210c72c24d160e32a"  # Example User ID
 
 # Fetch matches
 matches_data = get_user_matches(user_id)
@@ -251,38 +319,30 @@ with col1:
     st.header("Matches")
     if matches:  # Check if there are any matches
         for match in matches:
-            # Determine match-related information
-            user2_id = (
-                match["user2_id"] if match["user1_id"] == user_id else match["user1_id"]
-            )
-            user_info = get_user_info(user2_id)
-            first_name = user_info.get("first_name", "Unknown")
-            last_name = user_info.get("last_name", "User")
-            match_name = f"{first_name} {last_name}"
-            last_message_text = match.get("last_message", {}).get("message", "No messages yet.")
+        # Ensure match is a valid dictionary
+            if isinstance(match, dict):
+                # Determine match-related information
+                user2_id = (
+                    match.get("user2_id") if match.get("user1_id") == user_id else match.get("user1_id")
+                )
+                user_info = get_user_info(user2_id) if user2_id else {"first_name": "Unknown", "last_name": "Unknown"}
+                first_name = user_info.get("first_name", "Unknown")
+                last_name = user_info.get("last_name", "User")
+                match_name = f"{first_name} {last_name}"
 
-            # Create a form for each match
-            with st.form(key=f"form_{match['match_id']}"):
-                # Submit button for the match
-                if st.form_submit_button(match_name):
-                    st.session_state["selected_match_id"] = match["match_id"]
-                # # Display the last message below the button
-                # st.markdown(
-                #     f"""
-                #     <div style="
-                #         font-size: 0.9rem;
-                #         color: gray;
-                #         margin-top: 4px;
-                #         font-family: Arial, sans-serif;
-                #     ">
-                #         {last_message_text}
-                #     </div>
-                #     """,
-                #     unsafe_allow_html=True,
-                # )
+                # Safely get the last message text
+                last_message = match.get("last_message") or {}  # Use an empty dictionary if None
+                last_message_text = last_message.get("message", "No messages yet.")
+
+                # Create a form for each match
+                with st.form(key=f"form_{match.get('match_id', 'unknown')}"):
+                    # Submit button for the match
+                    if st.form_submit_button(match_name):
+                        st.session_state["selected_match_id"] = match.get("match_id")
+            else:
+                st.warning("Unexpected match format detected.")
     else:
         st.markdown("<p>No matches found. Start connecting today!</p>", unsafe_allow_html=True)
-
 
 
 # Initialize session state for messages
@@ -296,6 +356,7 @@ if "latest_message_id" not in st.session_state:
 if "refresh_trigger" not in st.session_state:
     st.session_state["refresh_trigger"] = 0
 
+
 # Column 2: Chat Window and Input
 with col2:
     st.header("Chat")
@@ -307,10 +368,10 @@ with col2:
         messages = chat_history.get("messages", [])
         latest_message_id = st.session_state["latest_message_id"].get(selected_match_id)
 
-        # Append new messages to session state
+        # Update session state with new messages if available
         new_messages = []
         for message in messages:
-            if message["message_id"] == latest_message_id:
+            if latest_message_id and message["message_id"] == latest_message_id:
                 break
             new_messages.append(message)
 
@@ -323,59 +384,62 @@ with col2:
 
             st.session_state["latest_message_id"][selected_match_id] = new_messages[-1]["message_id"]
 
-        # Display chat messages as bubbles
+        # Get all messages from session state
         all_messages = st.session_state["chat_history"].get(selected_match_id, [])
 
-        # Sort messages by timestamp to ensure older messages appear first
+        # Sort messages by timestamp
         all_messages.sort(key=lambda msg: msg["timestamp"])
 
-        # Generate chat bubbles with color-coding
-        chat_bubbles = ""
-        for message in all_messages:
-            sender_id = message["sender_id"]
-            msg_text = message["message"]
-            timestamp = message["timestamp"]
-            is_sender = sender_id == user_id  # Determine if the current user sent the message
+        # Display chat bubbles
+        if all_messages:
+            chat_bubbles = ""
+            for message in all_messages:
+                sender_id = message["sender_id"]
+                msg_text = message["message"]
+                timestamp = message["timestamp"]
+                is_sender = sender_id == user_id
 
-            # Bubble styling and alignment
-            bubble_class = "sender-bubble" if is_sender else "receiver-bubble"
-            alignment = "right" if is_sender else "left"
-            sender_label = "You" if is_sender else "Match"
+                # Bubble styling and alignment
+                bubble_class = "sender-bubble" if is_sender else "receiver-bubble"
+                alignment = "right" if is_sender else "left"
+                sender_label = "You" if is_sender else "Match"
 
-            # Custom background colors for sender and receiver
-            bubble_color = "#DCF8C6" if is_sender else "#E1E1E1"  # Light green for sender, light gray for receiver
-
-            # Build bubble HTML
-            chat_bubbles += f"""
-            <div class="{bubble_class}" style="text-align: {alignment}; background-color: {bubble_color}; padding: 10px; border-radius: 15px; margin-bottom: 10px; display: inline-block; max-width: 70%;">
-                <div style="font-size: 0.75rem; color: gray; margin-bottom: 3px;">{sender_label}</div>
-                <div class="bubble-text">{msg_text}</div>
-                <div class="bubble-timestamp" style="font-size: 0.75rem; color: gray; text-align: right;">{timestamp}</div>
-            </div>
-            """
-
-        # Render chat box with the messages
-        st.markdown(
-            f"""
-            <div class="chat-box" style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; height: 400px; overflow-y: auto; margin-bottom: 10px;">
-                {chat_bubbles}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+                # Build bubble HTML
+                chat_bubbles += f"""
+                <div class="{bubble_class}" style="text-align: {alignment}; padding: 10px; border-radius: 15px; margin-bottom: 10px; display: inline-block; max-width: 70%;">
+                    <div style="font-size: 0.75rem; color: gray; margin-bottom: 3px;">{sender_label}</div>
+                    <div class="bubble-text">{msg_text}</div>
+                    <div class="bubble-timestamp" style="font-size: 0.75rem; color: gray; text-align: right;">{timestamp}</div>
+                </div>
+                """
+            # Render chat bubbles
+            st.markdown(
+                f"""
+                <div class="chat-box" style="padding: 15px; border-radius: 8px; border: 1px solid #ddd; height: 400px; overflow-y: auto; margin-bottom: 10px;">
+                    {chat_bubbles}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            # Render a blank chat window if no messages
+            st.markdown(
+                """
+                <div class="chat-box" style="padding: 15px; border-radius: 8px; border: 1px solid #ddd; height: 400px; overflow-y: auto; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
+                    <p style="color: gray;">No messages yet. Start the conversation!</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         # Input for new messages
         user_input = st.text_input("Type your message:", key=f"user_input_{selected_match_id}")
-    
         if st.button("Send", key=f"send_button_{selected_match_id}"):
             if user_input.strip():
                 # Determine receiver ID dynamically
                 for match in matches:
                     if match["match_id"] == selected_match_id:
-                        receiver_id = (
-                            match["user2_id"] if match["user1_id"] == user_id else match["user1_id"]
-                        )
+                        receiver_id = match["user2_id"] if match["user1_id"] == user_id else match["user1_id"]
                         break
                 else:
                     st.error("Could not find the receiver ID for this match.")
@@ -387,10 +451,9 @@ with col2:
                     st.error("Failed to send message. Receiver ID is missing.")
             else:
                 st.warning("Please enter a message before sending.")
-
-        # st.rerun()
     else:
         st.write("Select a match to view the chat.")
+
 
 # After the chat column implementation...
 
