@@ -1,9 +1,10 @@
-from bson import ObjectId
+# from bson import ObjectId
+from bson.objectid import ObjectId
 from datetime import datetime
 from .utils.image import encode_img
 
 USER_REQUIRED_FIELDS = ["first_name", "last_name", "email", "password", "school", "birthday", "gender"]
-HOUSE_REQUIRED_FIELDS = ["type", "rooms_available", "rent", "utilities_included", "bathrooms", "address", "city", "province", "lease_length", "available_from"]
+HOUSE_REQUIRED_FIELDS = ["house_type", "rooms_available", "rent", "utilities_included", "bathrooms", "address", "city", "province", "lease_length", "available_from"]
 
 class User:
     def __init__(self, db):
@@ -65,34 +66,37 @@ class House:
         Create a new house document in the database.
         """
         
+        default_data = {
+            "house_type": "",
+            "rooms_available": 1,
+            "rent": "",
+            "utilities_included": "",
+            "utilities_cost": "",
+            "bathrooms": "",
+            "address": "",
+            "city": "",
+            "province": "",
+            "parking": "",
+            "pets": "",
+            "smoking": "",
+            "furnished": "",
+            "laundry": "",
+            "air_conditioning": "",
+            "dishwasher": "",
+            "description": "",
+            "lease_length": "",
+            "available_from": "",
+            "images": [],
+            "created_at": datetime.utcnow()
+        }
+
         images_encoded = []
         if "images" in house_data and house_data["images"]:
             for image_path in house_data["images"]:
                 images_encoded.append(encode_img(image_path))
+        house_data["images"] = images_encoded
 
-        house = {
-            "type": house_data["type"],
-            "rooms_available": house_data["rooms_available"],
-            "rent": house_data["rent"],
-            "utilities_included": house_data["utilities_included"],
-            "utilities_cost": house_data["utilities_cost"],
-            "bathrooms": house_data["bathrooms"],
-            "address": house_data["address"],
-            "city": house_data["city"],
-            "province": house_data["province"],
-            "parking": house_data["parking"],
-            "pets": house_data["pets"],
-            "smoking": house_data["smoking"],
-            "furnished": house_data["furnished"],
-            "laundry": house_data["laundry"],
-            "air_conditioning": house_data["air_conditioning"],
-            "dishwasher": house_data["dishwasher"],
-            "description": house_data["description"],
-            "lease_length": house_data["lease_length"],
-            "available_from": house_data["available_from"],
-            "images": images_encoded,
-            "created_at": datetime.utcnow()
-        }
+        house = default_data.update(house_data)
         return self.collection.insert_one(house).inserted_id
 
     def find_by_id(self, house_id):

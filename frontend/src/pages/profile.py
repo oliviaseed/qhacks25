@@ -1,6 +1,92 @@
 import streamlit as st
 from PIL import Image
+import requests
+import json
+from src.utils.auth import setup_auth
+from bson import ObjectId
+import base64
+import time
 
+def encode_img(image_file):
+    try:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return None
+
+
+cookies, db, login_status = setup_auth()
+# timeout = 10  # seconds
+# start_time = time.time()
+# while not cookies.ready():
+#     if time.time() - start_time > timeout:
+#         st.error("Cookies manager not ready. Please try again later.")
+#         st.stop()
+#     time.sleep(0.1)
+users_collection = db["users"]
+houses_collection = db["houses"]
+
+# Check login state
+if cookies.get("logged_in") == "true":
+    user_id = cookies.get("user_id")
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if user:
+        st.session_state.logged_in = True
+        st.session_state.user = user
+    else:
+        st.session_state.logged_in = False
+        st.session_state.user = None
+else:
+    st.session_state.logged_in = False
+    st.session_state.user = None
+
+# Function to update user data
+def update_user(user_id, data):
+    url = f"http://127.0.0.1:5000/update_user/{user_id}"
+    headers = {"Content-Type": "application/json"}
+    response = requests.patch(url, headers=headers, data=json.dumps(data))
+    return response
+
+# Function to update user data
+def update_house(house_id, data):
+    url = f"http://127.0.0.1:5000/update_house/{house_id}"
+    headers = {"Content-Type": "application/json"}
+    response = requests.patch(url, headers=headers, data=json.dumps(data))
+    return response
+
+def create_house(user_id, data):
+    url = f"http://127.0.0.1:5000/add_house/{user_id}"
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    return response
+
+# Function to upload image
+def upload_image(file):
+    url = "http://127.0.0.1:5000/upload_image"
+    files = {'file': (file.name, file.getvalue(), file.type)}
+    response = requests.post(url, files=files)
+    return response
+
+def upload_images(images):
+    encoded_images = []
+    for uploaded_file in images:
+        response = upload_image(uploaded_file)
+        if response.status_code == 200:
+            try:
+                response_json = response.json()
+                file_path = response_json.get("file_path")
+                encoded_images.append(file_path)
+            except requests.exceptions.JSONDecodeError:
+                st.error("Error uploading image: Invalid JSON response")
+        else:
+            st.error(f"Error uploading image: {response.content.decode('utf-8')}")
+    return encoded_images
+
+# Authentication and Profile Page
+if st.session_state.logged_in:
+    st.success(f"Welcome {st.session_state.user['first_name']}!")
+    
+    # Layout for Personal and Housing sections
 st.set_page_config(page_title="profile", layout="wide")
 
 # Colors and styling
@@ -18,79 +104,144 @@ st.markdown(
     
     .header {{
         background-color: {HEADER_COLOR};
-        padding: 0.5rem;
+        padding: 1.5rem;
         border-radius: 8px;
         text-align: center;
         color: {TEXT_COLOR};
-        font-size: 1.2rem;
+        font-size: 7rem;  /* Doubled from 3.5rem */
         font-weight: bold;
-        margin-bottom: 1rem;
+        margin-bottom: 3rem;  /* Increased for better spacing */
     }}
     
     .subheader {{
         color: {TEXT_COLOR};
-        font-size: 1rem;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
+        font-size: 4rem;  /* Doubled from 2rem */
+        font-weight: 600;
+        margin: 2rem 0;
     }}
     
-    .custom-label {{
-        font-size: 0.9rem;
-        color: {TEXT_COLOR};
-        margin-bottom: 0.3rem;
-        font-weight: 500;
+    /* Form element styling */
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] div {{
+        font-size: 36px !important;  /* Doubled from 18px */
     }}
     
-    .placeholder {{
-        background-color: #D3D3D3;
-        width: 100%;
-        height: 150px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        color: {TEXT_COLOR};
-        border-radius: 8px;
-        font-size: 0.9rem;
-    }}
-    
-    .stSelectbox div[data-baseweb="select"],
-    .stMultiSelect div[data-baseweb="select"] {{
-        font-size: 0.85rem !important;
-        padding: 0.2rem 0.5rem !important;
+    .stRadio label,
+    .stRadio div {{
+        font-size: 36px !important;  /* Doubled from 18px */
     }}
     
     .stNumberInput input,
     .stTextInput input,
     .stTextArea textarea {{
-        font-size: 0.85rem !important;
-        padding: 0.2rem 0.5rem !important;
+        font-size: 36px !important;  /* Doubled from 18px */
+        line-height: 1.5 !important;
+    }}
+    
+    div[data-baseweb="multiselect"] span,
+    div[data-baseweb="multiselect"] div {{
+        font-size: 36px !important;  /* Doubled from 18px */
+    }}
+    
+    .custom-label {{
+        font-size: 40px;  /* Doubled from 20px */
+        color: {TEXT_COLOR};
+        margin: 1.5rem 0 1rem 0;  /* Increased for better spacing */
+        font-weight: 500;
+    }}
+    
+    .placeholder {{
+        background-color: #D3D3D3;
+        width: 350px;
+        height: 350px;
+        display: inline-block;
+        margin: 5px;
+        text-align: center;
+        line-height: 350px;
+        color: {TEXT_COLOR};
+        font-size: 4rem;  /* Doubled from 2rem */
+    }}
+    
+    /* Upload button styling */
+    .uploadedFile {{
+        font-size: 32px !important;  /* Doubled from 16px */
     }}
     
     .stButton button {{
-        font-size: 0.9rem !important;
-        padding: 0.4rem 0.8rem !important;
-        background-color: {BUTTON_COLOR};
-        color: white;
-        border: none;
-        border-radius: 8px;
+        font-size: 36px !important;  /* Doubled from 18px */
+        padding: 1rem 2rem !important;  /* Increased padding for better button sizing */
     }}
-    
+
+    /* Uniform height for all form elements */
+    .stSelectbox > div,
+    .stMultiSelect > div,
+    .stNumberInput > div,
+    .stTextInput > div {{
+        min-height: 80px !important;
+    }}
+
+    /* Target the inner containers */
+    .stSelectbox > div > div,
+    .stMultiSelect > div > div,
+    .stNumberInput > div > div,
+    .stTextInput > div > div {{
+        min-height: 80px !important;
+        height: 80px !important;
+    }}
+
+    /* Target the actual input elements */
+    .stSelectbox > div > div > div,
+    .stMultiSelect > div > div > div,
+    .stNumberInput > div > div > input,
+    .stTextInput > div > div > input {{
+        min-height: 80px !important;
+        height: 80px !important;
+        padding: 0.5rem !important;
+    }}
+
+    /* Radio button height consistency */
+    .stRadio > div {{
+        padding: 0.5rem !important;
+        min-height: 80px !important;
+    }}
+
+    /* Special handling for select dropdowns to align content */
+    .stSelectbox [data-baseweb="select"] > div:first-child,
+    .stMultiSelect [data-baseweb="select"] > div:first-child {{
+        height: 80px !important;
+        min-height: 80px !important;
+        display: flex !important;
+        align-items: center !important;
+    }}
+
+    /* Keep text area (Interests/Hobbies) different */
+    .stTextArea textarea {{
+        min-height: 150px !important;
+    }}
+
+    /* Streamlit markdown text */
+    .css-10trblm {{
+        font-size: 36px !important;
+    }}
+
+    /* Streamlit default text */
+    .css-1dp5vir {{
+        font-size: 36px !important;
+    }}
+
+    /* File uploader text */
+    .css-1x8cf1d {{
+        font-size: 36px !important;
+    }}
+
+    /* Additional elements */
+    p, span, div {{
+        font-size: 36px !important;
+    }}
+
+    /* Increase spacing between form elements */
     .stSelectbox, .stNumberInput, .stTextInput, .stTextArea, .stRadio, .stMultiSelect {{
-        margin-bottom: 1.5rem;
-    }}
-
-    .stNumberInput > div {{
-        border: none !important; /* Remove the container border */
-        background-color: transparent !important; /* Make the background transparent */
-        box-shadow: none !important; /* Remove any shadow effect */
-    }}
-
-    .stNumberInput input {{
-        border: none !important;
-        box-shadow: none !important;
-        outline: none !important; /* Remove the focus outline */
-        background-color: transparent !important; /* Optional: Make the background transparent */
+        margin-bottom: 2rem !important;
     }}
     </style>
     """,
@@ -112,12 +263,12 @@ with col1:
     
     custom_label("Upload Personal Pictures")
     personal_images = st.file_uploader("", accept_multiple_files=True, key="personal_pics")
-    cols = st.columns(4)
+    cols = st.columns(4, gap="small")
     for i in range(4):
         with cols[i]:
             if personal_images and len(personal_images) > i:
                 img = Image.open(personal_images[i])
-                st.image(img, use_column_width=True)
+                st.image(img, width=350)
             else:
                 st.markdown(f'<div class="placeholder">+</div>', unsafe_allow_html=True)
 
@@ -136,7 +287,10 @@ with col1:
     custom_label("Cleanliness Level")
     st.selectbox(
         "",
-        ["Always Clean", "Mostly Clean", "Casual", "Flexible"],
+        ["Always Clean: Shared spaces should always be tidy.",
+         "Mostly Clean: Some clutter is fine, but no mess.",
+         "Casual: A bit of mess is okay in shared spaces.",
+         "Flexible: I can adapt to others' preferences."],
         key="cleanliness_level"
     )
     
@@ -161,12 +315,12 @@ with col2:
     
     custom_label("Upload Housing Pictures")
     housing_images = st.file_uploader("", accept_multiple_files=True, key="housing_pics")
-    cols = st.columns(4)
+    cols = st.columns(4, gap="small")
     for i in range(4):
         with cols[i]:
             if housing_images and len(housing_images) > i:
                 img = Image.open(housing_images[i])
-                st.image(img, use_column_width=True)
+                st.image(img, width=350)
             else:
                 st.markdown(f'<div class="placeholder">+</div>', unsafe_allow_html=True)
 

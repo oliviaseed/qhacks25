@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 from app.models import User, House, USER_REQUIRED_FIELDS
 from bson import ObjectId
 from ..utils.image import encode_img, decode_img
+from ..models import HOUSE_REQUIRED_FIELDS
 
 bp = Blueprint("user_routes", __name__)
 
@@ -38,16 +39,14 @@ def add_user():
         # If the user is listing a house, add the house first
         house_id = None
         if data.get("is_listing"):
-            house_data = data.get("house_listing")
+            house_data = data.get("house_id")
             if not house_data:
                 return jsonify({"error": "House listing details are required"}), 400
 
-            required_house_fields = ["type", "rooms_available", "rent", "utilities_included"]
-            for field in required_house_fields:
+            for field in HOUSE_REQUIRED_FIELDS:
                 if field not in house_data or house_data[field] is None:
                     return jsonify({"error": f"Missing required house field: {field}"}), 400
 
-            # Create the house
             house_id = house_model.create(house_data)
 
         # Create the user
