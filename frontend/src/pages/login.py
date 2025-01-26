@@ -1,47 +1,25 @@
 import streamlit as st
-import hashlib
-from src.utils.db import get_mongo_db
+from src.utils.auth import setup_auth, authenticate_user, set_cookies, clear_cookies, logout
 
-db = get_mongo_db()
-users_collection = db["users"]
-
-# Function to hash passwords
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-# User input for login
-email = st.text_input('Email:')
-password = st.text_input('Password:', type='password')
-
-# Placeholder for login status
-login_status = st.empty()
-
-# Function to authenticate user
-def authenticate_user(email, password):
-    email = email.strip()  # Remove leading/trailing whitespace
-    user = users_collection.find_one({"email": email})
-    if user and user["password"] == password:
-    # if user and user["password"] == hash_password(password):
-        return user
-    return None
-
-# Check if user is already logged in
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.user = None
+cookies, users_collection, login_status = setup_auth()
 
 if st.session_state.logged_in:
     st.success(f"Welcome {st.session_state.user['first_name']}!")
     st.write('You are now logged in.')
-    # Add navigation or other actions here
+    if st.button("Logout"):
+        logout(cookies)
+        st.rerun()  # Refresh the page to show the logged-out state
 else:
-    if st.button('Login'):
-        user = authenticate_user(email, password)
-        if user:
-            st.session_state.logged_in = True
-            st.session_state.user = user
-            login_status.success('Login successful!')
-            st.query_params["logged_in"] = "true"  # Refresh the page to show the logged-in state
-            st.rerun()
-        else:
-            login_status.error('Invalid email or password. Please try again.')
+    # User input for login
+        email = st.text_input('Email:')
+        password = st.text_input('Password:', type='password')
+        if st.button('Login'):
+            user = authenticate_user(email, password, users_collection)
+            if user:
+                st.session_state.logged_in = True
+                st.session_state.user = user
+                set_cookies(cookies, user)
+                login_status.success('Login successful!')
+                st.rerun()  # Refresh the page to show the logged-in state
+            else:
+                login_status.error('Invalid email or password. Please try again.')
