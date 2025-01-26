@@ -99,7 +99,7 @@ def render_page():
 
 
 def main():
-    st.set_page_config(page_title="RoomieU", layout="wide")
+    # st.set_page_config(page_title="RoomieU", layout="wide")
 
     # Title
     st.markdown("<h1 style='text-align: center;'>RoomieU</h1>", unsafe_allow_html=True)

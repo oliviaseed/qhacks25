@@ -43,9 +43,9 @@ def add_user():
             if not house_data:
                 return jsonify({"error": "House listing details are required"}), 400
 
-            for field in HOUSE_REQUIRED_FIELDS:
-                if field not in house_data or house_data[field] is None:
-                    return jsonify({"error": f"Missing required house field: {field}"}), 400
+            # for field in HOUSE_REQUIRED_FIELDS:
+            #     if field not in house_data or house_data[field] is None:
+            #         return jsonify({"error": f"Missing required house field: {field}"}), 400
 
             house_id = house_model.create(house_data)
 
