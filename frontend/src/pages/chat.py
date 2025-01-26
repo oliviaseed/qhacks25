@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import json
 import time
-from streamlit_autorefresh import st_autorefresh
+# from streamlit_autorefresh import st_autorefresh
 import openai
 from dotenv import load_dotenv
 import os
@@ -230,19 +230,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
-# Button Bar
-st.markdown(
-    """
-    <div class="button-bar">
-        <button>Profile</button>
-        <button>Home</button>
-        <button>Chat</button>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
 
 user_id = "679551b210c72c24d160e32a"  # Example User ID
 

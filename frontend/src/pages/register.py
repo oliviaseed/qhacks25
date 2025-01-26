@@ -10,6 +10,18 @@ cookies, users_collection, login_status = setup_auth()
 if cookies.get("logged_in") == "true":
     st.switch_page("home.py")
 
+# Hide Streamlit default menu and footer
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.title("User Registration")
 
 # Calculate the date range for the birth date input

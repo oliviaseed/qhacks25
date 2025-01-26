@@ -4,3 +4,5 @@ numpy
 streamlit-cookies-manager
 python-dotenv
 requests
+openai
+os
