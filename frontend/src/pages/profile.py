@@ -164,7 +164,7 @@ if st.session_state.logged_in:
             user_data["images"] = images
         if housing_images:
             images = upload_images(housing_images)
-            house["images"] = images
+            house_data["images"] = images
 
         # Remove empty fields from the data
         user_data = {k: v for k, v in user_data.items() if v}
